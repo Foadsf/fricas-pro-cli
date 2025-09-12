@@ -1,0 +1,32 @@
+)clear all
+)set streams calculate 10
+
+-- ===========================================================
+-- Parameter handling:
+--   A) Symbolic parameter w in y'' + w^2 y = sin t
+--   B) Re-run with specialized w values
+-- ===========================================================
+
+y := operator 'y
+t := 't
+
+-- ---------- A) Symbolic ----------
+eq := D(D(y(t), t), t) + w^2 * y(t) = sin(t)
+serSym := seriesSolve(eq, y, t = 0, [0, 1])
+output("Symbolic w series:")
+serSym
+
+-- ---------- B) Specializations ----------
+-- Rebuild the equation with concrete w values and solve again.
+-- (This avoids any ambiguity about how evaluation maps into a UTS.)
+w := 1
+eq1 := D(D(y(t), t), t) + w^2 * y(t) = sin(t)
+ser_w1 := seriesSolve(eq1, y, t = 0, [0, 1])
+output("Specialized w=1:")
+ser_w1
+
+w := 2
+eq2 := D(D(y(t), t), t) + w^2 * y(t) = sin(t)
+ser_w2 := seriesSolve(eq2, y, t = 0, [0, 1])
+output("Specialized w=2:")
+ser_w2

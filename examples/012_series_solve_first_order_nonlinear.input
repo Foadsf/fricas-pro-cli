@@ -1,0 +1,11 @@
+)clear all
+)set streams calculate 12
+
+-- First-order nonlinear:
+-- y'(x) - y(x)^2 - x^2 = 0,  y(0)=1
+
+y := operator 'y
+x := 'x
+
+eq := D(y(x), x) - (y(x))^2 - x^2 = 0
+seriesSolve(eq, y, x = 0, [1])

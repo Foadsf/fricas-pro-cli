@@ -1,0 +1,43 @@
+)clear all
+)set streams calculate 8
+
+-- ===========================================================
+-- Known pitfalls and safe patterns (all "bad" forms are commented).
+-- ===========================================================
+
+-- 1) Exponentiation: use ^, not **.
+-- BAD:  x(t)**2
+-- GOOD:
+x := operator 'x
+t := 't
+eq1 := D(x(t), t) = 1 + x(t)^2
+
+-- 2) Higher derivatives: use nested D for portability.
+-- BAD:  D(y(t), t, 3)
+-- GOOD:
+y := operator 'y
+eq2 := D(D(D(y(t), t), t), t) = sin(D(D(y(t), t), t)) * exp(y(t)) + cos(t)
+
+-- 3) ICs for single n-th order ODE: provide a value list [y(0), y'(0), ...].
+-- BAD:  seriesSolve(eq2, y, t = 0, [ y(0)=1, D(y(t),t)(0)=0, ... ])
+-- GOOD:
+ser2 := seriesSolve(eq2, y, t = 0, [1, 0, 0])
+output("OK: 3rd-order nonlinear single ODE with value-list ICs:")
+ser2
+
+-- 4) Name clashes: don't use same symbol as operator and variable.
+-- BAD:  x := operator 'x  and  D(..., x)  (x is then a BasicOperator)
+-- GOOD: choose a distinct variable, e.g., u:
+u := 'u
+eq3 := D(D(D(y(u), u), u), u) = sin(D(D(y(u), u), u)) * exp(y(u)) + cos(u)
+ser3 := seriesSolve(eq3, y, u = 0, [1, 0, 0])
+output("OK: avoid operator/variable clash by using u:")
+ser3
+
+-- 5) Systems: pass lists for equations and unknowns; ICs as equations.
+z := operator 'z
+eq4 := D(x(t), t) = z(t)
+eq5 := D(z(t), t) = -x(t)
+serSys := seriesSolve([eq4, eq5], [x, z], t = 0, [x(0) = 1, z(0) = 0])
+output("OK: system with proper lists and equation-style ICs:")
+serSys

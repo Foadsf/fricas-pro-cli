@@ -1,0 +1,50 @@
+)clear all
+)set streams calculate 12
+
+-- ===========================================================
+-- Post-processing UnivariateTaylorSeries (UTS):
+--   - Take derivatives of the series
+--   - Build simple residuals
+--   - Extract a few coefficients
+--   - Truncate display
+-- Notes:
+--   * 'differentiate' works on UTS.
+--   * 'coefficient(series, n)' extracts the t^n coefficient.
+--   * 'truncate(series, N)' shows fewer terms (still a UTS).
+-- ===========================================================
+
+y := operator 'y
+t := 't
+
+-- Example: y'' + y = 0, y(0)=1, y'(0)=0  → cos t
+eq := D(D(y(t), t), t) + y(t) = 0
+ys := seriesSolve(eq, y, t = 0, [1, 0])
+output("Series for y (should match cos t):")
+ys
+
+-- Derivatives of the series
+y1 := differentiate(ys, t)
+y2 := differentiate(y1, t)
+output("First derivative y' (≈ -sin t):")
+y1
+output("Second derivative y'' (≈ -cos t):")
+y2
+
+-- Residual check: y'' + y
+res := y2 + ys
+output("Residual y'' + y (should be O(t^N)):")
+res
+
+-- Coefficient extraction (t^0, t^2, t^4)
+c0 := coefficient(ys, 0)   -- 1
+c2 := coefficient(ys, 2)   -- -1/2
+c4 := coefficient(ys, 4)   -- 1/24
+output("Selected coefficients c0, c2, c4:")
+c0
+c2
+c4
+
+-- Truncate the printed series (for visual brevity)
+ys_trunc := truncate(ys, 8)  -- typically up to O(t^8)
+output("Truncated series up to O(t^8):")
+ys_trunc

@@ -1,0 +1,16 @@
+)clear all
+)set streams calculate 10
+
+-- System with known solutions x(t)=tan(t), y(t)=sec(t)
+-- D(x,t) = 1 + x(t)^2,  D(y,t) = x(t)*y(t)
+-- ICs: x(0)=0, y(0)=1
+
+x := operator 'x
+y := operator 'y
+t := 't
+
+eq1 := D(x(t), t) = 1 + x(t)^2
+eq2 := D(y(t), t) = x(t) * y(t)
+
+-- The output order follows [x, y]
+seriesSolve([eq1, eq2], [x, y], t = 0, [x(0) = 0, y(0) = 1])

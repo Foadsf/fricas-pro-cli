@@ -1,0 +1,36 @@
+)clear all
+)set streams calculate 10
+
+-- ===========================================================
+-- Introspection for seriesSolve and related infra
+-- - Safe, non-interactive queries:
+--     )what operations seriesSolve
+--     )display op seriesSolve
+--     )show ExpressionSpaceODESolver
+--     )display op D / coefficient / differentiate / truncate
+-- - Optional editor lines are commented (avoid runtime popups/crashes)
+-- ===========================================================
+
+output("=== what: list operations that match 'seriesSolve' ===")
+)what operations seriesSolve
+
+output("=== display: detailed overloads & domains for 'seriesSolve' ===")
+)display op seriesSolve
+
+output("=== show: package exposing 'seriesSolve' (ExpressionSpaceODESolver) ===")
+)show ExpressionSpaceODESolver
+
+output("=== display: derivative operator 'D' (helps with syntax questions) ===")
+)display op D
+
+output("=== display: post-processing helpers on series ===")
+)display op coefficient
+)display op differentiate
+)display op truncate
+
+-- Optional: if you want to open YOUR OWN files in an editor from FriCAS,
+-- uncomment the next two lines. On Windows, Notepad is fine:
+-- )set editor "notepad"
+-- )edit examples\010_series_solve_system_tan_sec.input
+
+output("=== done ===")

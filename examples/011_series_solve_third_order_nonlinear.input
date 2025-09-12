@@ -1,0 +1,14 @@
+)clear all
+)set streams calculate 10
+
+-- Third-order nonlinear ODE:
+-- y''' = sin(y'') * exp(y) + cos(u)
+-- ICs at u=0: y(0)=1, y'(0)=0, y''(0)=0
+
+y := operator 'y
+u := 'u
+
+eq := D(D(D(y(u), u), u), u) = sin(D(D(y(u), u), u)) * exp(y(u)) + cos(u)
+
+-- For a single 3rd-order ODE, ICs are a value list: [y(0), y'(0), y''(0)]
+seriesSolve(eq, y, u = 0, [1, 0, 0])

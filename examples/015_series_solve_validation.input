@@ -1,0 +1,44 @@
+)clear all
+)set streams calculate 10
+
+-- ===========================================================
+-- Validate series solutions by plugging them back into the ODE
+-- and checking the residual is O(t^N).
+-- We do two cases:
+--   A) Rotational system: x'=-y, y'=x  (x≈cos t, y≈sin t)
+--   B) Forced oscillator: y'' + w^2 y = sin t
+-- ===========================================================
+
+-- --------------- A) Rotational system ---------------
+x := operator 'x
+y := operator 'y
+t := 't
+
+eq1 := D(x(t), t) = -y(t)
+eq2 := D(y(t), t) =  x(t)
+
+ser := seriesSolve([eq1, eq2], [x, y], t = 0, [x(0) = 1, y(0) = 0])
+
+xs := first ser
+ys := second ser
+
+-- Residuals (should be O(t^N)):
+-- x' + y = 0  and  y' - x = 0
+rx := differentiate(xs, t) + ys
+ry := differentiate(ys, t) - xs
+
+output("Residual for x' + y (should be O(t^N)):")
+rx
+output("Residual for y' - x (should be O(t^N)):")
+ry
+
+-- --------------- B) Forced oscillator ---------------
+y1 := operator 'y1  -- separate operator to avoid clashes
+eqA := D(D(y1(t), t), t) + w^2 * y1(t) = sin(t)
+
+ys1 := seriesSolve(eqA, y1, t = 0, [0, 1])
+
+-- Residual: y1'' + w^2 y1 - sin t
+rA := differentiate(differentiate(ys1, t), t) + w^2 * ys1 - sin(t)
+output("Residual for y1'' + w^2 y1 - sin t (should be O(t^N)):")
+rA

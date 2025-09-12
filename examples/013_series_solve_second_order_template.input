@@ -1,0 +1,22 @@
+)clear all
+)set streams calculate 10
+
+-- Symbolic 2nd-order template with parameters:
+-- y'' + s*y = c0 + c1*x
+-- ICs are symbolic: y(0)=a, y'(0)=b
+-- This is useful as a pattern similar to an NSolve2order-style workflow.
+
+y  := operator 'y
+x  := 'x
+
+-- symbolic parameters
+a  := 'a
+b  := 'b
+s  := 's
+c0 := 'c0
+c1 := 'c1
+
+eq := D(D(y(x), x), x) + s * y(x) = c0 + c1 * x
+
+-- For single 2nd-order ODEs, ICs are [y(0), y'(0)]
+seriesSolve(eq, y, x = 0, [a, b])

@@ -1,0 +1,29 @@
+)clear all
+)set streams calculate 10
+
+-- ===========================================================
+-- Mixed initial conditions:
+--   A) Single ODE with non-zero derivative ICs
+--   B) First-order system with non-zero ICs
+-- ===========================================================
+
+-- --------------- A) Single ODE ---------------
+y := operator 'y
+t := 't
+
+-- y'' + y = 0 with y(0)=2, y'(0)=3
+eqS := D(D(y(t), t), t) + y(t) = 0
+serS := seriesSolve(eqS, y, t = 0, [2, 3])
+serS
+
+-- --------------- B) First-order system ---------------
+x := operator 'x
+z := operator 'z
+
+-- x' = z,  z' = -x  (harmonic oscillator in first-order form)
+eq1 := D(x(t), t) = z(t)
+eq2 := D(z(t), t) = -x(t)
+
+-- ICs: x(0)=1/2, z(0)=3
+serSys := seriesSolve([eq1, eq2], [x, z], t = 0, [x(0) = 1/2, z(0) = 3])
+serSys

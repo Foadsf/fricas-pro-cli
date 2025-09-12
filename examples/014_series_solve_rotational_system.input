@@ -1,0 +1,15 @@
+)clear all
+)set streams calculate 10
+
+-- Rotational system (linear, conservative):
+-- x' = -y,  y' = x
+-- ICs: x(0)=1, y(0)=0  → x≈cos t, y≈sin t
+
+x := operator 'x
+y := operator 'y
+t := 't
+
+eq1 := D(x(t), t) = -y(t)
+eq2 := D(y(t), t) =  x(t)
+
+seriesSolve([eq1, eq2], [x, y], t = 0, [x(0) = 1, y(0) = 0])

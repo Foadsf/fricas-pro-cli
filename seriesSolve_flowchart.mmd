@@ -1,0 +1,96 @@
+flowchart TD
+  %% ============================================================
+  %% seriesSolve: high-level algorithm (FriCAS/Axiom)
+  %% Package: ExpressionSpaceODESolver  EXPRODE
+  %% Helpers: UTS UnivariateTaylorSeries, TaylorSolve UTSCAT
+  %% ============================================================
+
+  A[Start] --> B{Dispatch on signature}
+  B -->|Single ODE<br/>Equation F, BasicOperator,<br/>Equation F, List F or F| C1
+  B -->|System of ODEs<br/>List Equation F, List BasicOperator,<br/>Equation F, List Equation F or List F| C2
+
+  %% ---------- Input normalization ----------
+  subgraph S1[Normalize inputs and context]
+    direction TB
+    N0[Pick independent variable and expansion point from Equation F, e.g., t=0]
+    N1[Normalize equations to LHS = RHS; use nested D of expression w.r.t. variable for derivatives]
+    N2[Validate unknowns are BasicOperator, avoid name clash with the independent variable]
+    N3[Coerce expressions into FunctionSpace F with series support]
+    N4[Determine term budget N from set streams calculate or a sensible default]
+  end
+
+  C1 --> S1
+  C2 --> S1
+  S1 --> D{Initial conditions form}
+
+  D -->|Single ODE: value list y at 0; y prime at 0; etc.| I1
+  D -->|System: ICs as equations, e.g., x at 0 = a; x prime at 0 = b| I2
+
+  %% ---------- Seed series ----------
+  subgraph S2[Seed UnivariateTaylorSeries UTS]
+    direction TB
+    I1[Create ansatz Y as sum over k of a_k times t minus t0 to power k; set lowest orders from ICs]
+    I2[Create ansatz X_j as sum over k of a_jk times t minus t0 to power k for each unknown; seed from ICs]
+    I3[Store seeded coefficients in UTS objects]
+  end
+
+  S1 --> S2
+
+  %% ---------- Main coefficient loop ----------
+  subgraph S3[Recursive coefficient determination]
+    direction TB
+    L0[For n from n0 to N where n0 is highest derivative order]
+    L1[Differentiate UTS as needed]
+    L2[Substitute series into each ODE and compute LHS minus RHS]
+    L3[Expand to order N plus 1 using UTS algebra:<br/>Cauchy product, sin cos exp log via series rules, powers and binomial]
+    L4[Collect coefficient of t minus t0 to power n across all equations]
+    L5{Solve constraints at order n}
+    L6[Linear or triangular case solve directly exact over base domain F]
+    L7[Nonlinear case symbolic reduction or small algebraic solve over F]
+    L8[Assign solved coefficients back into UTS]
+    L9{All coefficients at order n resolved}
+  end
+
+  S2 --> S3
+  L0 --> L1 --> L2 --> L3 --> L4 --> L5
+  L5 -->|Linear| L6 --> L8
+  L5 -->|Nonlinear| L7 --> L8
+  L8 --> L9
+  L9 -->|Yes| L0
+  L9 -->|No| E2
+
+  %% ---------- Postprocess ----------
+  subgraph S4[Postprocess and return]
+    direction TB
+    P1[Assemble final UTS for each unknown in requested order]
+    P2[Attach big O term for t minus t0 to power N plus 1]
+    P3[Return single UTS for single ODE or List of UTS for a system]
+  end
+
+  S3 -->|Success| S4
+  S4 --> Z[End]
+
+  %% ---------- Error handling / guardrails ----------
+  subgraph S5[Common errors and guardrails]
+    direction TB
+    E0[Reject: input is not an ODE; no derivatives present]
+    E1[Name clash: variable also used as BasicOperator; choose distinct symbol]
+    E2[Under or over determined at some order; inconsistent ICs or domain issues]
+    E3[Cannot coerce to FunctionSpace F with series support]
+    E4[Term budget N exhausted before closure; return partial series or give up]
+  end
+
+  S1 -->|Invalid ODE| E0
+  S1 -->|Name clash| E1
+  S2 -->|Missing seeds| E2
+  S3 -->|Domain issue| E3
+  S3 -->|Early stop| E4
+
+  %% ---------- Notes ----------
+  subgraph S6[Notes]
+    direction TB
+    T1[Implementation in ExpressionSpaceODESolver EXPRODE; multiple overloads]
+    T2[Series arithmetic via UTS over F; built ins for sin cos exp log]
+    T3[Order N controlled by set streams calculate; iterative coefficient matching]
+    T4[Systems: per order constraints often linear or triangular; nonlinearities from products and compositions]
+  end
