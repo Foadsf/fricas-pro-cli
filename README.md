@@ -13,7 +13,7 @@ Professional, monolithic Python CLI wrapper around the FriCAS REPL on Windows.
 - Optional: GitHub CLI (`gh`) for publishing the repo
 
 ## Quick start
-```bat
+```cmd
 python fricas_pro_cli.py version
 python fricas_pro_cli.py help read
 python fricas_pro_cli.py eval "2 + 3"
@@ -25,7 +25,7 @@ python fricas_pro_cli.py repl
 
 Verbose diagnostics:
 
-```bat
+```cmd
 python fricas_pro_cli.py --verbose file examples\000_demo.input
 ```
 

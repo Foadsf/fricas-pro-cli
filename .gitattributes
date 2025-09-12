@@ -1,0 +1,12 @@
+# Normalize all text files in the repository to LF in Git
+* text=auto eol=lf
+
+# Preserve CRLF for Windows-specific scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Keep examples and code consistently LF
+*.input text eol=lf
+*.py    text eol=lf
+*.md    text eol=lf
