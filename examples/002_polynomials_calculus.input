@@ -1,0 +1,7 @@
+)clear all
+factor(x^6 - 1)
+expand((x - 1)*(x^2 + x + 1))
+differentiate(x^5 + 3*x^2 + 7, x)
+integrate(3*x^2 + 2*x + 1, x)
+differentiate(sin(x) * exp(x), x)
+integrate(sin(x) * exp(x), x)

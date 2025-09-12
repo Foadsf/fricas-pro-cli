@@ -1,0 +1,32 @@
+)clear all
+)set streams calculate 8
+
+-- ===========================================================
+-- seriesSolve basics: power-series solutions to ODEs
+-- ===========================================================
+
+-- -----------------------------
+-- Example A: First-order system
+--   D(x(t), t) = 1 + x(t)^2
+--   D(y(t), t) = x(t) * y(t)
+--   with x(0) = 0, y(0) = 1, expand around t = 0
+-- -----------------------------
+x := operator 'x
+y := operator 'y
+
+eq1 := D(x(t), t) = 1 + x(t)^2
+eq2 := D(y(t), t) = x(t) * y(t)
+
+-- The order of [x, y] determines the order of the returned series list.
+seriesSolve([eq1, eq2], [x, y], t = 0, [x(0) = 0, y(0) = 1])
+
+-- Example B: Single higher-order nonlinear ODE
+--   y''' = sin(y'') * exp(y) + cos(u), around u = 0
+--   Use a different independent variable 'u' to avoid clashing with operator x.
+-- -----------------------------
+eq3 := D(D(D(y(u), u), u), u) = sin(D(D(y(u), u), u)) * exp(y(u)) + cos(u)
+
+-- Initial conditions at u = 0
+-- For a 3rd-order ODE: [ y(0), y'(0), y''(0) ]
+seriesSolve(eq3, y, u = 0, [1, 0, 0])
+

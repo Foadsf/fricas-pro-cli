@@ -1,0 +1,9 @@
+)clear all
+A := matrix [[1,2,3],[0,4,5],[1,0,6]]
+determinant A
+inverse A
+eigenvalues A
+eigenvectors A
+b := matrix [[5],[4],[6]]
+x := (inverse A) * b
+A * x
