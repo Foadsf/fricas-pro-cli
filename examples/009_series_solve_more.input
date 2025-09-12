@@ -1,0 +1,42 @@
+)clear all
+)set streams calculate 10
+
+-- ===========================================================
+-- More practice with seriesSolve
+--   A) Forced harmonic oscillator (2nd order, parameter w)
+--   B) Riccati equation (1st order, nonlinear)
+--   C) Duffing oscillator (2nd order, cubic nonlinearity, parameter a)
+-- ===========================================================
+
+---
+
+-- A) Forced harmonic oscillator:
+--    y'' + w^2*y = sin(t),  y(0)=0, y'(0)=1
+
+---
+
+y := operator 'y
+t := 't
+
+eqA := D(D(y(t), t), t) + w^2 * y(t) = sin(t)
+seriesSolve(eqA, y, t = 0, [0, 1])
+
+---
+
+-- B) Riccati equation:
+--    y' = y^2 + t,  y(0)=0
+
+---
+
+eqB := D(y(t), t) = y(t)^2 + t
+seriesSolve(eqB, y, t = 0, [0])
+
+---
+
+-- C) Duffing oscillator:
+--    y'' + y + y^3 = 0,  y(0)=a, y'(0)=0
+
+---
+
+eqC := D(D(y(t), t), t) + y(t) + y(t)^3 = 0
+seriesSolve(eqC, y, t = 0, [a, 0])
