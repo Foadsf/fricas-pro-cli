@@ -1,0 +1,19 @@
+)clear all
+
+-- Univariate polynomial solve
+solve(x^2 - 5*x + 6 = 0, x)
+
+-- Cubic with rational roots
+solve(x^3 - 6*x^2 + 11*x - 6 = 0, x)
+
+-- Simple non-polynomial equation (may return in terms of special functions)
+solve(exp(x) = 5, x)
+
+-- Simultaneous linear system in two variables
+solve([x + y = 3, 2*x - y = 0], [x, y])
+
+-- Quartic with multiple real roots (robust polynomial solve)
+solve(x^4 - 5*x^2 + 4 = 0, x)
+
+-- Parameterized equation (keep it symbolic)
+solve(a*x + b = 0, x)

@@ -1,0 +1,17 @@
+)clear all
+
+-- Solve Ax = b exactly over rationals (via inverse)
+A := matrix [[2, -1, 0], [ -1, 2, -1], [0, -1, 2]]
+b := matrix [[1], [0], [1]]
+
+determinant A
+inverse A
+x := (inverse A) * b
+A * x
+
+-- Rank and null space demonstrations (if available)
+rank A
+nullSpace A
+
+-- Alternative solve (if available in your build, uncomment to try)
+-- solve(A, b)

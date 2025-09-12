@@ -1,0 +1,19 @@
+)clear all
+
+-- Work with polynomials over the rationals
+-- Groebner basis of a small ideal in Q[x, y]
+-- Example system: { x*y - 1, x^2 - y }
+-- The Groebner basis under lex order (typically) reveals elimination structure.
+
+F := [x*y - 1, x^2 - y]
+lexGroebner(F, [x, y])$PolyGroebner(Integer)
+
+-- Another example: circle and line intersection ideal
+G := [x^2 + y^2 - 1, y - x]
+lexGroebner(G, [x, y])$PolyGroebner(Integer)
+
+-- Change variable order by changing the symbol list:
+lexGroebner(G, [y, x])$PolyGroebner(Integer)
+-- (For degree-based order, try: totalGroebner(G, [x, y])$PolyGroebner(Integer))
+
+

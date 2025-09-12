@@ -1,0 +1,20 @@
+)clear all
+
+-- Taylor series around 0
+taylor(sin(x), x = 0)
+taylor(exp(x), x = 0)
+taylor(log(1 + x), x = 0)
+
+-- Specify series order (truncate to 10 terms where applicable)
+taylor(sin(x), x = 0, 10)
+taylor(exp(x), x = 0, 10)
+
+-- Laurent series around x = 0
+series(1/x + 2 + 3*x, x = 0)
+
+-- A rational function series expansion
+series(1/(1 - x), x = 0)
+
+-- Special functions: Gamma, erf
+Gamma(5)
+erf(1)

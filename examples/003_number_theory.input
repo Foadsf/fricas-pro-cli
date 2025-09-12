@@ -1,0 +1,31 @@
+)clear all
+
+-- Basic gcd / lcm
+gcd(462, 1071)
+lcm(21, 6)
+
+-- Integer factorization
+factor(123456)
+factor(2025)
+factor(999983)  -- large prime close to 10^6
+
+-- Primality checks (predicates on integers)
+prime? 97
+prime? 1001
+
+-- Modular inverses (portable approach over Integers)
+-- Find k such that (a*k) rem p = 1 (assuming p is prime and gcd(a,p)=1)
+[ k for k in 1..10 | (3*k) rem 11 = 1 ]  -- → [4]
+[ k for k in 1..10 | (7*k) rem 11 = 1 ]  -- → [8]
+
+-- Small helper for reuse
+modInv(a, p) == first([ k for k in 1..(p - 1) | (a*k) rem p = 1 ])
+modInv(17, 101)                            -- → 6 (since 17*6 ≡ 1 (mod 101))
+
+-- Chinese Remainder example (two congruences with coprime moduli)
+-- Solve x ≡ 2 (mod 3), x ≡ 3 (mod 5) → unique solution mod 15
+-- We construct in each modulus and then search the smallest nonnegative solution.
+Z3  := ZMOD 3
+Z5  := ZMOD 5
+-- small brute-force search to stay simple and explicit
+[ n for n in 0..60 | (n::Z3 = 2::Z3) and (n::Z5 = 3::Z5) ]
