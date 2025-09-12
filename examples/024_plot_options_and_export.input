@@ -1,0 +1,13 @@
+)clear all
+-- ===========================================================
+-- More GnuDraw scripts (dense sampling is handled by gnuplot)
+-- ===========================================================
+
+-- 2D oscillatory explicit function → oscillatory.plt
+gnuDraw(sin(tan(x)) - tan(sin(x)), x = 0..6, "oscillatory.plt")
+
+-- 3D Bessel surface (ripples) → bessel_ripples.plt
+gnuDraw(5*besselJ(0, sqrt(x^2 + y^2)), x = -20..20, y = -20..20, "bessel_ripples.plt")
+
+-- “Bessel ripples” surface  → bessel_ripples.plt
+gnuDraw(5*besselJ(0, sqrt(x^2 + y^2)), x = -20..20, y = -20..20, "bessel_ripples.plt")

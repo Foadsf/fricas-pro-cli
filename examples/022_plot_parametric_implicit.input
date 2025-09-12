@@ -1,0 +1,15 @@
+)clear all
+-- ===========================================================
+-- Parametric & implicit plots, plus a classic Bessel surface
+-- ===========================================================
+
+-- 2D parametric Lissajous: x = sin(3t), y = sin(4t)
+draw(curve(sin(3*t), sin(4*t)), t = 0..2*%pi)
+
+-- 2D implicit algebraic curve: p(x,y) = 0
+p := (x - 3*y^2)*(x - 1) - (y - 2)^2
+draw(p = 0, x, y, range == [ -1..11, -7..7 ])
+
+-- 3D surface with Bessel J0 of radius r = sqrt(x^2 + y^2)
+-- (nice ripples)
+draw(5*besselJ(0, sqrt(x^2 + y^2)), x = -20..20, y = -20..20)

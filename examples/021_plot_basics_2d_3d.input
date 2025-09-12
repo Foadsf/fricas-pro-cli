@@ -1,0 +1,23 @@
+)clear all
+-- ===========================================================
+-- Plotting basics: 2D & 3D with draw(...)
+-- Notes:
+--  • On Windows, a graphics window may open. Close it to continue.
+--  • Use ^ for powers (not **).
+-- ===========================================================
+
+-- 2D: y = x*cos(x)
+draw(x*cos(x), x = 0..30)
+
+-- 2D parametric: unit circle (x=cos t, y=sin t)
+draw(curve(cos(t), sin(t)), t = 0..2*%pi)
+
+-- 3D surface: z = sin(x*y)
+draw(sin(x*y), x = -4..4, y = -4..4)
+
+-- 3D space curve: helix (x=5 cos t, y=5 sin t, z=t)
+draw(curve(5*cos(t), 5*sin(t), t), t = -12..12)
+
+-- 3D parametric surface: simple twisted sheet
+--   (x = u cos v, y = u sin v, z = v cos u)
+draw(surface(u*cos(v), u*sin(v), v*cos(u)), u = -4..4, v = 0..%pi)

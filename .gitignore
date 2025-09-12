@@ -25,3 +25,10 @@ venv/
 .idea/
 .DS\_Store
 Thumbs.db
+
+# plots
+*.png
+*.svg
+*.plt
+*.pdf
+*.eps

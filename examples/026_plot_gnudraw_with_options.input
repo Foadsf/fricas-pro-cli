@@ -1,0 +1,12 @@
+)clear all
+
+-- Generate plain .plt scripts; add titles/sampling in gnuplot later.
+
+-- 2D: y = x*cos(x)
+gnuDraw(x*cos(x), x = 0..30, "xcosx_titled_dense.plt")
+
+-- 3D: Bessel ripples
+gnuDraw(5*besselJ(0, sqrt(x^2 + y^2)), x = -15..15, y = -15..15, "bessel_ripples_titled.plt")
+
+-- 2D: oscillatory
+gnuDraw(sin(tan(x)) - tan(sin(x)), x = 0..6, "oscillatory_titled.plt")

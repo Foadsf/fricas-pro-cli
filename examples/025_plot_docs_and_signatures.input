@@ -1,0 +1,21 @@
+-- Dump plotting-related docs/signatures you can inspect via the wrapper.
+)clear all
+
+output("=== PLOTTING DOCS: draw ===")
+)what operations draw
+)display op draw
+
+output("=== PLOTTING DOCS: GnuDraw package ===")
+)show GnuDraw
+)display op gnuDraw
+
+output("=== PLOTTING DOCS: Graphics control (common ops) ===")
+)what operations TwoDimensionalViewport
+)what operations ThreeDimensionalViewport
+)what operations makeObject
+)what operations create3Space
+
+output("=== HINT ===")
+output("Use your wrapper, e.g.:")
+output("  python fricas_pro_cli.py eval )display op gnuDraw")
+output("…to read the exact overloads available in your build.")

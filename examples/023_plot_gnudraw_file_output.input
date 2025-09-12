@@ -1,0 +1,18 @@
+)clear all
+-- ===========================================================
+-- GnuDraw: generate gnuplot script files you can render later
+--   Usage pattern:
+--     1) Run this file → produces *.plt scripts in CWD
+--     2) Run gnuplot yourself to create PNG/SVG/PS, etc.
+-- ===========================================================
+
+-- 2D: y = x*cos(x)  → plot_xcosx.plt
+gnuDraw(x*cos(x), x = 0..30, "plot_xcosx.plt")
+
+-- 3D surface: z = sin(x*y)  → surface_sinxy.plt
+gnuDraw(sin(x*y), x = -4..4, y = -4..4, "surface_sinxy.plt")
+
+-- 2D “unit circle” as two explicit branches (gnuDraw has no parametric overload)
+-- Upper/lower semicircles:  y = ±sqrt(1 - x^2), x ∈ [-1,1]
+gnuDraw(sqrt(1 - x^2),  x = -1..1, "unit_circle_upper.plt")
+gnuDraw(-sqrt(1 - x^2), x = -1..1, "unit_circle_lower.plt")
