@@ -28,6 +28,126 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 # -------------------------
+# Color and Formatting Utils
+# -------------------------
+
+
+class Colors:
+    """ANSI color codes for terminal output"""
+
+    # Basic colors
+    BLACK = "\033[30m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN = "\033[36m"
+    WHITE = "\033[37m"
+
+    # Bright colors
+    BRIGHT_BLACK = "\033[90m"
+    BRIGHT_RED = "\033[91m"
+    BRIGHT_GREEN = "\033[92m"
+    BRIGHT_YELLOW = "\033[93m"
+    BRIGHT_BLUE = "\033[94m"
+    BRIGHT_MAGENTA = "\033[95m"
+    BRIGHT_CYAN = "\033[96m"
+    BRIGHT_WHITE = "\033[97m"
+
+    # Styles
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
+    UNDERLINE = "\033[4m"
+    RESET = "\033[0m"
+
+    # Background colors
+    BG_RED = "\033[41m"
+    BG_GREEN = "\033[42m"
+    BG_YELLOW = "\033[43m"
+    BG_BLUE = "\033[44m"
+
+
+def colorize(text: str, color: str = "", style: str = "") -> str:
+    """Apply color and style to text with automatic reset"""
+    if not _should_use_colors():
+        return text
+    prefix = style + color
+    return f"{prefix}{text}{Colors.RESET}" if prefix else text
+
+
+def _should_use_colors() -> bool:
+    """Determine if we should use colors based on environment"""
+    # Disable colors if NO_COLOR env var is set
+    if os.environ.get("NO_COLOR"):
+        return False
+
+    # Disable colors if output is redirected
+    if not sys.stdout.isatty():
+        return False
+
+    # Enable colors on Windows 10+ with ANSI support
+    if os.name == "nt":
+        try:
+            # Enable ANSI color support on Windows
+            import ctypes
+
+            kernel32 = ctypes.windll.kernel32
+            kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+            return True
+        except Exception:
+            return False
+
+    # Enable on Unix-like systems
+    return True
+
+
+def format_error(message: str) -> str:
+    """Format error messages with red color and bold style"""
+    return colorize(f"✗ ERROR: {message}", Colors.BRIGHT_RED, Colors.BOLD)
+
+
+def format_warning(message: str) -> str:
+    """Format warning messages with yellow color"""
+    return colorize(f"⚠ WARNING: {message}", Colors.BRIGHT_YELLOW)
+
+
+def format_info(message: str) -> str:
+    """Format info messages with blue color"""
+    return colorize(f"ℹ INFO: {message}", Colors.BRIGHT_BLUE)
+
+
+def format_success(message: str) -> str:
+    """Format success messages with green color"""
+    return colorize(f"✓ {message}", Colors.BRIGHT_GREEN)
+
+
+def format_prompt(text: str) -> str:
+    """Format interactive prompts"""
+    return colorize(text, Colors.BRIGHT_CYAN, Colors.BOLD)
+
+
+def format_command(text: str) -> str:
+    """Format FriCAS commands"""
+    return colorize(text, Colors.BRIGHT_MAGENTA)
+
+
+def format_output_header(text: str) -> str:
+    """Format output section headers"""
+    return colorize(text, Colors.BRIGHT_WHITE, Colors.BOLD)
+
+
+def format_secondary(text: str) -> str:
+    """Format secondary/dim text"""
+    return colorize(text, Colors.BRIGHT_BLACK)
+
+
+def format_highlight(text: str) -> str:
+    """Format highlighted text"""
+    return colorize(text, Colors.BRIGHT_YELLOW, Colors.BOLD)
+
+
+# -------------------------
 # Defaults & Utilities
 # -------------------------
 
@@ -75,7 +195,8 @@ def _clean_text_block(text: str) -> str:
 
 def _debug(msg: str, enabled: bool):
     if enabled:
-        print(f"[DEBUG] {msg}", file=sys.stderr)
+        formatted_msg = colorize(f"[DEBUG] {msg}", Colors.BRIGHT_BLACK)
+        print(formatted_msg, file=sys.stderr)
 
 
 # -------------------------
@@ -200,17 +321,14 @@ class FriCASSession:
             raise TimeoutError(f"Timed out waiting for prompt after sending: {line}")
 
         # The returned block includes EVERYTHING since the last prompt.
-        # We want just the output in response to THIS command:
-        # Strategy: everything gathered AFTER the write, minus the final prompt echo.
-        # Since we clear buffer ONLY at session start and between sends we don't,
-        # we will compute delta by slicing from the end backwards until just before the prompt.
-        # Simpler: keep a local capture starting now. We already have `block` as the delta.
         text = block.decode(self.encoding, errors="ignore")
         _debug(f"<- block size: {len(text)} chars", self.debug)
         if self.debug:
-            sep = "=" * 30
+            sep = colorize("=" * 30, Colors.BRIGHT_BLACK)
+            debug_header = colorize("[DEBUG] RAW BLOCK START", Colors.BRIGHT_BLACK)
+            debug_footer = colorize("[DEBUG] RAW BLOCK END", Colors.BRIGHT_BLACK)
             sys.stderr.write(
-                f"\n[DEBUG] RAW BLOCK START\n{sep}\n{text}\n{sep}\n[DEBUG] RAW BLOCK END\n"
+                f"\n{debug_header}\n{sep}\n{text}\n{sep}\n{debug_footer}\n"
             )
             sys.stderr.flush()
         return text
@@ -274,7 +392,8 @@ def op_version(session: FriCASSession, timeout: float, raw: bool) -> str:
     """
     bt = session.banner_text or ""
     if not bt:
-        return session.request(")summary", timeout=timeout, raw=raw)
+        result = session.request(")summary", timeout=timeout, raw=raw)
+        return _format_version_output(result, raw)
 
     lines = [ln.strip() for ln in bt.splitlines() if ln.strip()]
     # Filter out advisory lines like "Issue )quit …"
@@ -297,7 +416,7 @@ def op_version(session: FriCASSession, timeout: float, raw: bool) -> str:
             ):
                 pick.append(ln)
         if pick:
-            return "\n".join(pick)
+            return _format_version_output("\n".join(pick), raw)
 
     # Fallback: pick the first three core lines wherever they appear
     wanted = [
@@ -307,7 +426,35 @@ def op_version(session: FriCASSession, timeout: float, raw: bool) -> str:
         or ln.startswith("Version:")
         or ln.startswith("Timestamp:")
     ]
-    return "\n".join(wanted[:3])
+    return _format_version_output("\n".join(wanted[:3]), raw)
+
+
+def _format_version_output(text: str, raw: bool) -> str:
+    """Format version output with colors and styling"""
+    if raw or not text.strip():
+        return text
+
+    lines = text.splitlines()
+    formatted_lines = []
+
+    for line in lines:
+        line = line.strip()
+        if "FriCAS Computer Algebra System" in line:
+            formatted_lines.append(format_output_header(line))
+        elif line.startswith("Version:"):
+            version_part = line.replace("Version:", "").strip()
+            formatted_lines.append(
+                f"{colorize('Version:', Colors.BRIGHT_BLUE, Colors.BOLD)} {format_highlight(version_part)}"
+            )
+        elif line.startswith("Timestamp:"):
+            timestamp_part = line.replace("Timestamp:", "").strip()
+            formatted_lines.append(
+                f"{colorize('Timestamp:', Colors.BRIGHT_BLUE, Colors.BOLD)} {format_secondary(timestamp_part)}"
+            )
+        else:
+            formatted_lines.append(line)
+
+    return "\n".join(formatted_lines)
 
 
 def op_help(
@@ -413,23 +560,60 @@ def interactive_repl(
     Lightweight interactive shell that proxies lines to FriCAS.
     We keep our own prompt to avoid re-emitting FriCAS's "(n) ->".
     """
-    print("FriCAS CLI — type ')quit' or Ctrl+C to exit.")
+    welcome_msg = colorize("FriCAS CLI", Colors.BRIGHT_GREEN, Colors.BOLD)
+    exit_msg = format_secondary("type ')quit' or Ctrl+C to exit")
+    print(f"{welcome_msg} — {exit_msg}")
+
+    colored_prompt = format_prompt("fricas> ")
+
     try:
         while True:
             try:
-                line = input(prompt)
+                line = input(colored_prompt)
             except EOFError:
                 break
             if not line.strip():
                 continue
+
+            # Show what command we're executing
+            if not raw:
+                print(format_secondary(f"→ {line}"))
+
             out = session.request(line, timeout=timeout, raw=raw)
             if out:
-                print(out)
+                # Format output based on content
+                formatted_out = _format_fricas_output(out, raw)
+                print(formatted_out)
+
             if line.strip().lower() in {")quit", ")pquit", ")fin", ")exit"}:
                 break
     except KeyboardInterrupt:
-        print()
+        print(f"\n{format_info('Session interrupted')}")
     return 0
+
+
+def _format_fricas_output(output: str, raw: bool) -> str:
+    """Format FriCAS output with appropriate colors"""
+    if raw or not output.strip():
+        return output
+
+    lines = output.splitlines()
+    formatted_lines = []
+
+    for line in lines:
+        # Color mathematical expressions and results
+        if re.match(r"^\s*\(\d+\)", line):  # FriCAS result lines like (1)
+            formatted_lines.append(colorize(line, Colors.BRIGHT_GREEN))
+        elif re.match(r"^\s*Type:", line):  # Type information
+            formatted_lines.append(colorize(line, Colors.BRIGHT_BLUE))
+        elif "Error" in line or "error" in line:  # Error messages
+            formatted_lines.append(colorize(line, Colors.BRIGHT_RED))
+        elif "Warning" in line or "warning" in line:  # Warnings
+            formatted_lines.append(colorize(line, Colors.BRIGHT_YELLOW))
+        else:
+            formatted_lines.append(line)
+
+    return "\n".join(formatted_lines)
 
 
 # -------------------------
@@ -464,6 +648,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--verbose",
         action="store_true",
         help="Verbose mode (implies --debug and --raw, dumps raw REPL blocks).",
+    )
+    p.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable colored output (same as setting NO_COLOR env var).",
     )
 
     sub = p.add_subparsers(dest="cmd", metavar="subcommand")
@@ -533,6 +722,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
 
+    # Handle color settings
+    if getattr(args, "no_color", False):
+        os.environ["NO_COLOR"] = "1"
+
     if getattr(args, "verbose", False):
         args.debug = True
         args.raw = True
@@ -540,12 +733,21 @@ def main(argv=None) -> int:
     exe = args.fricas_path
 
     if not Path(exe).exists():
-        print(f"ERROR: FriCAS executable not found: {exe}", file=sys.stderr)
+        print(format_error(f"FriCAS executable not found: {exe}"), file=sys.stderr)
+        print(
+            format_info("Set FRICAS_EXE environment variable or use --fricas-path"),
+            file=sys.stderr,
+        )
         return 2
 
     session = FriCASSession(exe_path=exe, debug=args.debug)
 
     try:
+        # Show startup message
+        if not args.raw and hasattr(args, "cmd") and args.cmd:
+            startup_msg = format_secondary(f"Starting FriCAS session...")
+            print(startup_msg, file=sys.stderr)
+
         # Ensure FriCAS is up and prompt ready
         session.start()
 
@@ -576,11 +778,27 @@ def main(argv=None) -> int:
             return 0
 
         if args.cmd == "eval":
+            # Show what we're evaluating if not in raw mode
+            if not args.raw:
+                print(format_secondary(f"Evaluating: {format_command(args.expr)}"))
             out = op_eval(session, args.expr, timeout=args.timeout, raw=args.raw)
-            print(out)
+            if out:
+                formatted_out = _format_fricas_output(out, args.raw)
+                print(formatted_out)
             return 0
 
         if args.cmd == "file":
+            # Show what file we're reading if not in raw mode
+            if not args.raw:
+                file_path = format_highlight(args.path)
+                options = []
+                if args.quiet:
+                    options.append("quiet")
+                if args.ifthere:
+                    options.append("ifthere")
+                opt_str = f" ({', '.join(options)})" if options else ""
+                print(format_secondary(f"Reading file: {file_path}{opt_str}"))
+
             out = op_file(
                 session,
                 args.path,
@@ -590,10 +808,16 @@ def main(argv=None) -> int:
                 raw=args.raw,
             )
             if out:
-                print(out)
+                formatted_out = _format_fricas_output(out, args.raw)
+                print(formatted_out)
             return 0
 
         if args.cmd == "system":
+            # Show what command we're executing if not in raw mode
+            if not args.raw:
+                cmd_text = format_command(args.command)
+                print(format_secondary(f"Executing system command: {cmd_text}"))
+
             out = op_system(session, args.command, timeout=args.timeout, raw=args.raw)
             if out:
                 print(out)
@@ -605,9 +829,12 @@ def main(argv=None) -> int:
             )
 
         if args.cmd == "pipe":
+            if not args.raw:
+                print(format_secondary("Reading from stdin..."))
             out = op_pipe(session, timeout=args.timeout, raw=args.raw)
             if out:
-                print(out)
+                formatted_out = _format_fricas_output(out, args.raw)
+                print(formatted_out)
             return 0
 
         # No subcommand: show help
@@ -615,16 +842,16 @@ def main(argv=None) -> int:
         return 0
 
     except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+        print(format_error(str(e)), file=sys.stderr)
         return 2
     except TimeoutError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+        print(format_error(str(e)), file=sys.stderr)
         return 124  # common timeout code
     except KeyboardInterrupt:
-        print("", file=sys.stderr)
+        print(f"\n{format_info('Operation cancelled')}", file=sys.stderr)
         return 130
     except Exception as e:
-        print(f"ERROR: {e}", file=sys.stderr)
+        print(format_error(str(e)), file=sys.stderr)
         return 1
     finally:
         session.stop()
