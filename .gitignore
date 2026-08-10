@@ -32,3 +32,6 @@ Thumbs.db
 *.plt
 *.pdf
 *.eps
+
+# pip imports
+0.41.0
